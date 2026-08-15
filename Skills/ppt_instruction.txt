@@ -1,0 +1,91 @@
+# SKILL: Presentaciones corporativas estilo NeoConsulting
+
+## Cuándo usar esta skill
+Cuando el usuario pida crear, rediseñar o iterar una presentación (deck comparativo, diagnóstico técnico, benchmarking de herramientas, propuesta de negocio). Aplica tanto si el entregable final es HTML como PPTX.
+
+---
+
+## 1. Flujo de trabajo (lo más importante — no te lo saltes)
+
+**Nunca generes el PPTX final directo.** El proceso correcto tiene 3 fases, y saltarse la fase 1 es el error más caro (literal, en tokens, y en tiempo de revisión):
+
+1. **Fase de contenido (HTML, barato)**: arma cada slide en HTML, una por una, y pide confirmación antes de pasar a la siguiente. El HTML se itera gratis — el usuario puede pedir "reduce el texto", "cambia el ícono", "no me queda claro este gráfico" las veces que haga falta sin costo alto. Todas las decisiones de contenido, tono, y qué dato va en qué slide se cierran aquí.
+2. **Fase de verificación**: antes de dar cualquier cifra (precio, límite de plan, feature de una herramienta) como definitiva, verifícala con `web_search`/`web_fetch` contra la fuente oficial (la página de precios de la empresa, su documentación, su blog propio) — nunca contra un blog de terceros o la palabra de otra IA sin contrastar. Si el usuario te trae un dato de otra IA, revísalo igual antes de aceptarlo; en esta metodología pasó más de una vez que "otra IA confirmó X" y X no se sostenía al ir a la fuente primaria.
+3. **Fase de conversión (PPTX, caro)**: solo cuando el HTML ya está 100% cerrado, conviértelo a PowerPoint nativo (ver sección 4). Este paso consume mucho más recurso que conversar — no lo repitas por cada micro-ajuste; acumula los cambios pendientes en el HTML primero.
+
+**Regla de oro**: si el usuario pide un cambio de contenido/texto y ya existe un PPTX generado, pregúntate si conviene aplicarlo primero al HTML y luego regenerar el PPTX en un solo paso, en vez de parchear el PPTX directamente — mantiene ambos archivos sincronizados y evita que diverjan.
+
+---
+
+## 2. Sistema de diseño (tokens fijos — no improvisar otros)
+
+```css
+--navy:      #040836;  /* color principal — fondos oscuros, títulos, headers de tabla */
+--white:     #FFFFFF;
+--bg-gray:   #F4F5F9;  /* fondo de tarjetas, note-boxes, filas alternas de tabla */
+--text-soft: #3A3B45;  /* texto de cuerpo */
+--text-dark: #1B1B24;  /* texto de labels dentro de diagramas */
+--line:      #E2E3EA;  /* bordes sutiles */
+
+/* semánticos — usar SIEMPRE con este significado, no intercambiar */
+--ok:     #3FA96A;  /* verde: correcto, resuelto, ventaja */
+--danger: #E0555A;  /* rojo: riesgo, falla, desventaja */
+--amber:  #B8860B;  /* ámbar: neutral, "depende", advertencia leve */
+--accent: #0E7C86;  /* teal: color secundario para diferenciar una 2da entidad comparada (nunca reemplaza a --navy como color "protagonista") */
+```
+
+- **Tipografía**: Montserrat en toda la pieza. Títulos y subtítulos en 700-800 (bold/extrabold). Cuerpo en 400 (normal). Los "eyebrows" (categoría arriba del título) van en mayúsculas, 11-12px, `letter-spacing: 2-2.5px`, bold.
+- **Nunca mezclar otras familias tipográficas** ni otros colores fuera de esta paleta, salvo para representar el color real de marca de un logo/ícono externo (ej. azul Facebook `#1877F2`, verde WhatsApp `#25D366`) — esos son la única excepción permitida.
+
+---
+
+## 3. Anatomía de cada slide
+
+Todas las slides son 1280×720px (16:9), padding 72px lateral / 64px arriba-abajo.
+
+**Elementos fijos en cada slide** (el "chrome"):
+- Logo del cliente arriba a la izquierda (72px desde el borde).
+- Un ícono circular pequeño (42px, borde 1.5px, sin relleno) arriba a la derecha — cambia por slide según el tema de esa página (ej. ícono de reloj para una slide de límites, ícono de gráfico de barras para una comparativa de precios). Nunca dejarlo vacío ni repetir el mismo ícono en slides de contenido distinto.
+- Número de página abajo a la derecha, gris, pequeño.
+
+**Patrón de encabezado de contenido** (repetido en cada slide de contenido):
+```
+EYEBROW (categoría, caps, tracked)
+Título de la slide (bold, navy, 24-28px)
+──── (línea divisoria: 56px × 4px, navy)
+```
+
+**Componentes reutilizables**:
+- **Tarjeta con borde de color**: fondo `--bg-gray`, borde izquierdo de 3-4px en un color semántico. Se usa para módulos, pilares de conclusión, o para contrastar "opción A vs. opción B" lado a lado.
+- **Tabla comparativa**: header navy con texto blanco, filas alternadas blanco/gris. Para lectura rápida, antepón a cada celda un pequeño ícono circular de color (✓ verde, ! rojo, ~ ámbar, $ navy) en vez de solo texto — reduce la sensación de "muro de texto" en tablas densas.
+- **Note-box**: fondo gris, borde izquierdo navy de 3px, texto pequeño (10-11px). Se usa para citar la fuente de un dato, dejar una salvedad ("no confirmado, ver nota"), o rematar una slide con la conclusión de esa página específica.
+- **Diagramas de flujo**: SVG a mano (o formas nativas si es PPTX) con cajas conectadas por líneas/flechas. Si se comparan dos herramientas para el mismo proceso, usar el **mismo ejemplo concreto** (mismo dato ficticio, misma campaña) en ambos diagramas — el contraste se vuelve automático con solo poner las dos slides una junto a la otra.
+- **Callouts sobre un diagrama**: flecha punteada + texto corto en el color semántico correspondiente, para señalar un beneficio o riesgo puntual sin saturar el diagrama principal.
+
+---
+
+## 4. Reglas de contenido
+
+- **Texto corto por defecto.** Frases, no párrafos. Si el usuario dice "reduce el texto" una vez, aplica ese mismo criterio de brevedad a las slides siguientes sin que lo vuelva a pedir.
+- **Sé neutral cuando el usuario lo pida.** Si piden "no sugerir nada, déjalo abierto", elimina cualquier jerarquía visual que implique preferencia (un color destacado sobre otro, una tarjeta más grande que otra, un orden que insinúe ranking) — usa el mismo tratamiento visual para todas las opciones comparadas.
+- **Marca explícitamente lo que no está confirmado.** Nunca presentes una cifra estimada como si fuera dato duro. Usa una nota o un ícono ámbar (`~`) para las celdas donde hay incertidumbre real, y actualiza a verde (`✓`) en cuanto se verifique.
+- **La estructura del deck es siempre libre, la propone el usuario.** Esta skill no impone un orden de slides fijo ni una plantilla de secciones — cada deck parte de cero en cuanto a estructura. Cuando el usuario pida una presentación nueva, pregunta o espera a que él proponga el orden y contenido de las slides antes de empezar a construir; si el usuario ya trae una estructura, sigue esa. Solo si el usuario pide explícitamente una sugerencia de estructura, propórsela como punto de partida a discutir, no como algo fijo — y dala por buena solo después de que el usuario la confirme o la ajuste.
+- **No repitas el mismo dato en dos slides distintas con distinta redacción** — si un número ya vive en la tabla comparativa, no lo repitas en la slide de conclusión; referencia el concepto, no el número.
+
+---
+
+## 5. Construcción técnica del PPTX (cuando ya se aprobó el HTML)
+
+- Generar con **pptxgenjs** (Node.js) usando formas y texto **nativos** — nunca capturas de pantalla del HTML pegadas como imagen. Esto es lo que permite que el cliente edite el texto directo en PowerPoint después.
+- Los `<img>` hotlinkeados del HTML (logos, íconos por URL) **no funcionan en PPTX** — hay que generar cada ícono como archivo PNG local antes (con `react-icons` + `sharp`, renderizando a SVG y rasterizando) y luego insertarlo con `addImage`.
+- Reutiliza funciones helper entre slides para no repetir código: una función `chrome()` para logo+ícono+página, `title()`/`eyebrow()` para el encabezado, `noteBox()` para las cajas de nota. Esto también asegura consistencia visual entre todas las slides del deck.
+- **Siempre validar y revisar visualmente antes de entregar**: correr el validador de estructura del archivo, convertir a PDF/imágenes, y mirar cada slide renderizada. Los solapamientos de texto (cajas que se calculan más altas de lo esperado por el contenido, texto que invade el ícono de al lado) son el error más común y no se detectan sin esta revisión — no basta con que el script corra sin errores.
+
+---
+
+## 6. Lo que NO hacer
+
+- No generar el PPTX antes de que el contenido esté cerrado en el chat/HTML.
+- No dar una cifra de precio/límite de plan sin haberla verificado en la fuente oficial de esa herramienta en ese momento (los precios cambian, y confiar en un número "recordado" de una conversación vieja es la fuente #1 de errores en este tipo de deck).
+- No mezclar colores o tipografías fuera del sistema de diseño de la sección 2.
+- No dejar un dato repetido con cifras distintas en dos slides — si se corrige un número, hay que buscar TODAS las slides donde aparece (incluida la data usada para construir gráficos) y corregirlas todas a la vez.

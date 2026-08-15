@@ -1,0 +1,7 @@
+youtube-transcript-api
+langchain-text-splitters
+chromadb
+google-genai
+python-dotenv
+fastapi
+uvicorn[standard]

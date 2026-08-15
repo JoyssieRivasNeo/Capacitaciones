@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chatbot de Capacitaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:      #040836;
+    --white:     #FFFFFF;
+    --bg-gray:   #F4F5F9;
+    --text-soft: #3A3B45;
+    --line:      #E2E3EA;
+    --ok:        #3FA96A;
+    --danger:    #E0555A;
+    --amber:     #B8860B;
+    --accent:    #0E7C86;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Montserrat", system-ui, sans-serif;
+    background: var(--bg-gray);
+    color: var(--text-soft);
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  main {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  header img {
+    height: 34px;
+    width: auto;
+  }
+  header .divisor {
+    width: 1px;
+    height: 26px;
+    background: var(--line);
+  }
+  h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0;
+  }
+  section {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  section h2 {
+    font-size: 11px;
+    margin: 0 0 12px;
+    color: var(--navy);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2.2px;
+  }
+  .fila {
+    display: flex;
+    gap: 8px;
+  }
+  .fila + .fila {
+    margin-top: 8px;
+  }
+  input[type="text"], select {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--text-soft);
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+  button {
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: none;
+    background: var(--navy);
+    color: var(--white);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  #estadoVideo {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--text-soft);
+  }
+  #listaVideos {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .video-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-gray);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 0.82rem;
+  }
+  .video-item .nombre {
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .video-item .chunks {
+    color: var(--text-soft);
+    margin-left: 6px;
+    font-weight: 400;
+  }
+  .video-item button {
+    background: transparent;
+    color: var(--danger);
+    padding: 4px 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  #chat {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-bottom: 8px;
+  }
+  .mensaje {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    line-height: 1.45;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+  }
+  .mensaje.usuario {
+    align-self: flex-end;
+    background: var(--navy);
+    color: var(--white);
+  }
+  .mensaje.bot {
+    align-self: flex-start;
+    background: var(--bg-gray);
+    color: var(--text-soft);
+    border-left: 3px solid var(--accent);
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/static/logo.png" alt="NEO 25 años">
+    <div class="divisor"></div>
+    <h1>Chatbot de Capacitaciones</h1>
+  </header>
+
+  <section>
+    <h2>Agregar video</h2>
+    <div class="fila">
+      <input type="text" id="inputUrl" placeholder="URL de YouTube del video">
+    </div>
+    <div class="fila">
+      <input type="text" id="inputNombre" placeholder="Nombre del video (opcional)">
+      <button id="btnAgregar">Agregar</button>
+    </div>
+    <div id="estadoVideo"></div>
+    <div id="listaVideos"></div>
+  </section>
+
+  <section>
+    <h2>Preguntar</h2>
+    <div class="fila">
+      <select id="selectVideo">
+        <option value="">Todos los videos</option>
+      </select>
+    </div>
+    <div id="chat"></div>
+    <div class="fila">
+      <input type="text" id="inputPregunta" placeholder="Escribe tu pregunta">
+      <button id="btnPreguntar">Enviar</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  const chat = document.getElementById("chat");
+  const listaVideos = document.getElementById("listaVideos");
+  const selectVideo = document.getElementById("selectVideo");
+
+  function agregarMensaje(texto, tipo) {
+    const div = document.createElement("div");
+    div.className = "mensaje " + tipo;
+    div.textContent = texto;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+  }
+
+  async function cargarVideos() {
+    const resp = await fetch("/api/videos");
+    const videos = await resp.json();
+
+    listaVideos.innerHTML = "";
+    const valorPrevio = selectVideo.value;
+    selectVideo.innerHTML = '<option value="">Todos los videos</option>';
+
+    for (const video of videos) {
+      const item = document.createElement("div");
+      item.className = "video-item";
+      item.innerHTML = `
+        <span><span class="nombre"></span><span class="chunks"></span></span>
+        <button data-id="${video.video_id}">Eliminar</button>
+      `;
+      item.querySelector(".nombre").textContent = video.nombre;
+      item.querySelector(".chunks").textContent = ` (${video.chunks} fragmentos)`;
+      item.querySelector("button").addEventListener("click", () => eliminarVideo(video.video_id));
+      listaVideos.appendChild(item);
+
+      const opcion = document.createElement("option");
+      opcion.value = video.video_id;
+      opcion.textContent = video.nombre;
+      selectVideo.appendChild(opcion);
+    }
+
+    selectVideo.value = valorPrevio;
+  }
+
+  async function eliminarVideo(videoId) {
+    await fetch(`/api/videos/${videoId}`, { method: "DELETE" });
+    await cargarVideos();
+  }
+
+  async function agregarVideo() {
+    const inputUrl = document.getElementById("inputUrl");
+    const inputNombre = document.getElementById("inputNombre");
+    const estado = document.getElementById("estadoVideo");
+    const url = inputUrl.value.trim();
+    const nombre = inputNombre.value.trim();
+    if (!url) return;
+
+    estado.textContent = "Procesando video, esto puede tardar un momento...";
+    try {
+      const resp = await fetch("/api/videos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, nombre: nombre || null }),
+      });
+      const datos = await resp.json();
+      if (!resp.ok) throw new Error(datos.detail || "Error al procesar el video.");
+      estado.textContent = `Listo: ${datos.chunks_guardados} fragmentos guardados.`;
+      inputUrl.value = "";
+      inputNombre.value = "";
+      await cargarVideos();
+    } catch (err) {
+      estado.textContent = "Error: " + err.message;
+    }
+  }
+
+  async function enviarPregunta() {
+    const input = document.getElementById("inputPregunta");
+    const boton = document.getElementById("btnPreguntar");
+    const pregunta = input.value.trim();
+    if (!pregunta) return;
+
+    const videoId = selectVideo.value || null;
+
+    agregarMensaje(pregunta, "usuario");
+    input.value = "";
+    boton.disabled = true;
+    const burbujaBot = agregarMensaje("Pensando...", "bot");
+
+    try {
+      const resp = await fetch("/api/preguntar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pregunta, video_id: videoId }),
+      });
+      const datos = await resp.json();
+      if (!resp.ok) throw new Error(datos.detail || "Error al generar la respuesta.");
+      burbujaBot.textContent = datos.respuesta;
+    } catch (err) {
+      burbujaBot.textContent = "Error: " + err.message;
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
+  document.getElementById("btnAgregar").addEventListener("click", agregarVideo);
+  document.getElementById("btnPreguntar").addEventListener("click", enviarPregunta);
+  document.getElementById("inputPregunta").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") enviarPregunta();
+  });
+  document.getElementById("inputUrl").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") agregarVideo();
+  });
+
+  cargarVideos();
+</script>
+</body>
+</html>
