@@ -167,6 +167,25 @@
     color: var(--text-soft);
     border-left: 3px solid var(--accent);
   }
+  .mensaje.bot p {
+    margin: 0 0 8px;
+  }
+  .mensaje.bot p:last-child {
+    margin-bottom: 0;
+  }
+  .mensaje.bot ul {
+    margin: 4px 0 8px;
+    padding-left: 20px;
+  }
+  .mensaje.bot ul:last-child {
+    margin-bottom: 0;
+  }
+  .mensaje.bot li {
+    margin-bottom: 4px;
+  }
+  .mensaje.bot strong {
+    color: var(--navy);
+  }
 </style>
 </head>
 <body>
@@ -210,10 +229,54 @@
   const listaVideos = document.getElementById("listaVideos");
   const selectVideo = document.getElementById("selectVideo");
 
+  function escaparHtml(texto) {
+    return texto
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function aplicarNegritas(texto) {
+    return texto.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  }
+
+  // Conversor liviano de Markdown a HTML para las respuestas del bot
+  // (negritas y listas, que es lo que Gemini usa normalmente).
+  function renderizarMarkdown(texto) {
+    const lineas = escaparHtml(texto).split("\n");
+    let html = "";
+    let listaAbierta = false;
+
+    for (const linea of lineas) {
+      const coincideLista = linea.match(/^\s*[*-]\s+(.*)/);
+      if (coincideLista) {
+        if (!listaAbierta) {
+          html += "<ul>";
+          listaAbierta = true;
+        }
+        html += `<li>${aplicarNegritas(coincideLista[1])}</li>`;
+        continue;
+      }
+      if (listaAbierta) {
+        html += "</ul>";
+        listaAbierta = false;
+      }
+      if (linea.trim() !== "") {
+        html += `<p>${aplicarNegritas(linea)}</p>`;
+      }
+    }
+    if (listaAbierta) html += "</ul>";
+    return html;
+  }
+
   function agregarMensaje(texto, tipo) {
     const div = document.createElement("div");
     div.className = "mensaje " + tipo;
-    div.textContent = texto;
+    if (tipo === "bot") {
+      div.innerHTML = renderizarMarkdown(texto);
+    } else {
+      div.textContent = texto;
+    }
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
     return div;
@@ -300,9 +363,9 @@
       });
       const datos = await resp.json();
       if (!resp.ok) throw new Error(datos.detail || "Error al generar la respuesta.");
-      burbujaBot.textContent = datos.respuesta;
+      burbujaBot.innerHTML = renderizarMarkdown(datos.respuesta);
     } catch (err) {
-      burbujaBot.textContent = "Error: " + err.message;
+      burbujaBot.innerHTML = renderizarMarkdown("Error: " + err.message);
     } finally {
       boton.disabled = false;
     }
